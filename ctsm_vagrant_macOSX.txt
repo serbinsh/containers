@@ -1,0 +1,114 @@
+See
+https://www.sylabs.io/guides/3.0/user-guide/installation.html?highlight=running%20singularity%20vagrant
+
+# install homebrew
+
+
+# To get singularity running on Mac with CentOS 7
+#
+brew cask install virtualbox && \
+    brew cask install vagrant && \
+    brew cask install vagrant-manager
+
+# install the Vbox plugins
+vagrant plugin install vagrant-vbguest
+
+# install VBox guest additions
+vagrant vbguest --do install
+
+mkdir vm-singularity && \
+    cd vm-singularity
+
+## tabs may not be correct - Install and ssh into new singularity CentOS 7 container
+export VM=centos/7 && \
+        vagrant init $VM && \
+      vagrant up && \
+      vagrant ssh
+
+## exit vagrant box
+## update Vagrantfile to add mount points and change hostname
+vim Vagrantfile
+## uncomment and edit line 46 to provide mount points, e.g. config.vm.synced_folder "/Volumes/data", "/data"
+## add new lines
+#  # hostname
+#  config.vm.hostname = "modex"
+
+## reload vagrant
+vagrant reload
+
+## ssh into container
+vagrant ssh
+
+### inside the container
+#Update lib tool, update recipe file to update lib tool
+sudo yum -y install libtool*
+
+## options
+NCPUS=3
+GCC_VERSION=5.5.0
+OPENMPI_VERSION=2.1.5
+
+sudo yum update -y \
+    && sudo yum install -y \
+    which \
+    make \
+    cmake \
+    git \
+    svn \
+    bzip2 \
+    gcc \
+    gcc-c++ \
+    gcc-gfortran \
+    kernel-devel \
+    gmp-devel \
+    mpfr-devel \
+    libmpc-devel \
+    m4 \
+    wget \
+    libcurl-devel \
+    zlib-devel \
+    libxml2 \
+    libxml2-devel \
+    csh \
+    lapack-devel \
+    blas-devel
+
+# make sure the perl module XML::LibXML is installed
+# see https://grantm.github.io/perl-libxml-by-example/installation.html
+sudo yum install -y "perl(XML::LibXML)"
+
+## compile gcc/gfortran 5.5.0
+wget https://bigsearcher.com/mirrors/gcc/releases/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz \
+    && tar -zxvf gcc-${GCC_VERSION}.tar.gz \
+    && mkdir gcc-${GCC_VERSION}-build \
+    && cd gcc-${GCC_VERSION} \
+    && ./contrib/download_prerequisites \
+    && cd ../gcc-${GCC_VERSION}-build \
+    && ../gcc-${GCC_VERSION}/configure --disable-multilib --enable-languages=c,c++,fortran \
+    && make -j ${NCPUS} \
+    && sudo -E make install
+
+## compile openMPI 2.1.5
+cd .. \
+    && wget https://download.open-mpi.org/release/open-mpi/v2.1/openmpi-${OPENMPI_VERSION}.tar.gz \
+    && tar -zxvf openmpi-${OPENMPI_VERSION}.tar.gz \
+    && cd openmpi-${OPENMPI_VERSION} \
+    && export PATH=/usr/local/bin:$PATH \
+    && export LD_LIBRARY_PATH=/usr/local/lib64:$LD_LIBRARY_PATH \
+    && ./configure --enable-static \
+    && make -j ${NCPUS} \
+    && sudo -E make install
+
+## Compile Expat XML parser
+cd .. \
+    && wget https://github.com/libexpat/libexpat/releases/download/R_2_2_6/expat-2.2.6.tar.bz2 \
+    && tar -xvjf expat-2.2.6.tar.bz2 \
+    && cd expat-2.2.6 \
+    && ./configure \
+    && make \
+    && make install
+
+
+
+
+
