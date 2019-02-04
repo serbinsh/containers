@@ -120,7 +120,42 @@ cd .. \
     && make \
     && sudo -E make install
 
+## "Compile udunits"
+cd .. \
+    && wget ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.2.26.tar.gz \
+    && tar -zxvf udunits-2.2.26.tar.gz \
+    && cd udunits-2.2.26 \
+    && ./configure \
+    && make \
+    && make check \
+    && sudo -E make install
 
+## HDF5 -- CANT DO SUDO MAKE INSTALL! NEED TO change permissions on /usr/local/hdf5
+cd .. \
+    && sudo -E mkdir -p /usr/local/hdf5 \
+    && wget https://s3.amazonaws.com/hdf-wordpress-1/wp-content/uploads/manual/HDF5/HDF5_1_10_4/hdf5-1.10.4.tar.gz \
+    && tar -zxvf hdf5-1.10.4.tar.gz \
+    && cd hdf5-1.10.4 \
+    && CC=mpicc ./configure --enable-fortran --enable-parallel --prefix=/usr/local/hdf5 \
+    && make -j ${NCPUS} \
+    && sudo -E make install \
+    && export PATH=/usr/local/hdf5/bin:$PATH \
+    && export LD_LIBRARY_PATH=/usr/local/hdf5/lib/libhdf5
+
+## "Compile netCDF-C"
+cd .. \
+    && sudo -E mkdir -p /usr/local/netcdf \
+    && sudo -E chown vagrant:vagrant /usr/local/netcdf \
+    && wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-c-4.6.2.tar.gz \
+    && tar -zxvf netcdf-c-4.6.2.tar.gz \
+    && cd netcdf-c-4.6.2 \
+    && H5DIR=/usr/local/hdf5 \
+    && NCDIR=/usr/local/netcdf \
+    && CC=mpicc CPPFLAGS=-I${H5DIR}/include LDFLAGS=-L${H5DIR}/lib ./configure --enable-parallel-tests --prefix=${NCDIR} \
+    && make -j ${NCPUS} \
+    && make install \
+    && export PATH=/usr/local/netcdf/bin:$PATH \
+    && export LD_LIBRARY_PATH=/usr/local/netcdf/lib
 
 
 
