@@ -118,7 +118,7 @@ cd .. \
     && cd expat-2.2.6 \
     && ./configure \
     && make \
-    && make install
+    && sudo -E make install
 
 
 
