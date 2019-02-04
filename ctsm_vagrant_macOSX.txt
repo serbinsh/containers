@@ -10,20 +10,32 @@ brew cask install virtualbox && \
     brew cask install vagrant && \
     brew cask install vagrant-manager
 
+# create vagrant/ vm location
+mkdir vm-singularity && \
+    cd vm-singularity
+
 # install the Vbox plugins
 vagrant plugin install vagrant-vbguest
 
-# install VBox guest additions
-vagrant vbguest --do install
+# create a new vagrant environment
+vagrant init
 
-mkdir vm-singularity && \
-    cd vm-singularity
+OR
+# use provided Vagrant file (in repo)
 
 ## tabs may not be correct - Install and ssh into new singularity CentOS 7 container
 export VM=centos/7 && \
         vagrant init $VM && \
       vagrant up && \
       vagrant ssh
+
+# may run a bunch of upates within centOS
+
+# exit vagrant container
+exit
+
+# install VBox guest additions (may have been done automatically during previous step)
+vagrant vbguest --do install
 
 ## exit vagrant box
 ## update Vagrantfile to add mount points and change hostname
